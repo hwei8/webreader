@@ -1,0 +1,88 @@
+.reader-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  min-height: 80vh;
+}
+
+.epub-container {
+  height: 80vh;
+  overflow-y: auto;
+}
+
+.text-content {
+  line-height: 2;
+  font-size: 18px;
+  padding: 20px;
+  font-family: 'Noto Sans SC', 'Microsoft YaHei', 'SimHei', sans-serif;
+  text-align: justify;
+  text-justify: inter-ideograph;
+  word-break: break-all;
+  white-space: pre-wrap;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.text-line {
+  margin-bottom: 1.5em;
+  text-indent: 2em;
+  letter-spacing: 0.05em;
+}
+
+.text-line:first-child {
+  text-indent: 0;
+}
+
+.navigation-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-top: 1px solid #eee;
+  background: white;
+}
+
+.nav-button {
+  padding: 10px 20px;
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.nav-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.nav-button:hover:not(:disabled) {
+  background-color: #1976d2;
+}
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.progress-bar {
+  width: 200px;
+  height: 4px;
+  background-color: #eee;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #2196f3;
+  transition: width 0.3s ease;
+}
