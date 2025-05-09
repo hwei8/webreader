@@ -12,18 +12,32 @@ export const Reader = ({ file }: ReaderProps) => {
   const [totalPages, setTotalPages] = useState(0);
   const [rendition, setRendition] = useState<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const LINES_PER_PAGE = 30; // Adjust this number based on your needs
+  const LINES_PER_PAGE = 30;
 
   useEffect(() => {
     if (file.type === 'application/epub+zip') {
-      const book = epub.default(file);
-      const rendition = book.renderTo(containerRef.current!, {
-        width: '100%',
-        height: '100%',
-        spread: 'none'
-      });
-      rendition.display();
-      setRendition(rendition);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const arrayBuffer = e.target?.result as ArrayBuffer;
+        const book = epub.default(arrayBuffer);
+        const newRendition = book.renderTo(containerRef.current!, {
+          width: '100%',
+          height: '100%',
+          spread: 'none'
+        });
+        newRendition.display();
+        setRendition(newRendition);
+
+        // Add navigation for EPUB
+        newRendition.on('keyup', (event: KeyboardEvent) => {
+          if (event.key === 'ArrowRight' || event.key === ' ') {
+            newRendition.next();
+          } else if (event.key === 'ArrowLeft') {
+            newRendition.prev();
+          }
+        });
+      };
+      reader.readAsArrayBuffer(file);
     } else if (file.type === 'text/plain') {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -48,13 +62,17 @@ export const Reader = ({ file }: ReaderProps) => {
   }, [file]);
 
   const goToNextPage = () => {
-    if (currentPage < totalPages - 1) {
+    if (file.type === 'application/epub+zip' && rendition) {
+      rendition.next();
+    } else if (currentPage < totalPages - 1) {
       setCurrentPage(prev => prev + 1);
     }
   };
 
   const goToPreviousPage = () => {
-    if (currentPage > 0) {
+    if (file.type === 'application/epub+zip' && rendition) {
+      rendition.prev();
+    } else if (currentPage > 0) {
       setCurrentPage(prev => prev - 1);
     }
   };
