@@ -11,13 +11,13 @@ export const Reader = ({ bookPath }: ReaderProps) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [rendition, setRendition] = useState<any>(null);
+  const [pageInput, setPageInput] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
-  const LINES_PER_PAGE = 30;
+  const LINES_PER_PAGE = 180;
 
   useEffect(() => {
     const isEpub = bookPath.endsWith('.epub');
-    // Add the base URL to the book path
-    const fullPath = `/webreader/webreader/${bookPath}`;
+    const fullPath = `/webreader/${bookPath}`;
 
     if (isEpub) {
       fetch(fullPath)
@@ -32,7 +32,6 @@ export const Reader = ({ bookPath }: ReaderProps) => {
           newRendition.display();
           setRendition(newRendition);
 
-          // Add keyboard navigation for EPUB
           newRendition.on('keyup', (event: KeyboardEvent) => {
             if (event.key === 'ArrowRight' || event.key === ' ') {
               newRendition.next();
@@ -48,7 +47,9 @@ export const Reader = ({ bookPath }: ReaderProps) => {
       fetch(fullPath)
         .then(response => response.text())
         .then(text => {
-          const lines = text.split('\n');
+          const lines = text.split('\n').map(line => {
+            return line.replace(/^\uFEFF/, '');
+          });
           setContent(lines);
           setTotalPages(Math.ceil(lines.length / LINES_PER_PAGE));
         })
@@ -71,6 +72,19 @@ export const Reader = ({ bookPath }: ReaderProps) => {
       rendition.prev();
     } else if (currentPage > 0) {
       setCurrentPage(prev => prev - 1);
+    }
+  };
+
+  const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPageInput(e.target.value);
+  };
+
+  const handlePageInputSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const pageNumber = parseInt(pageInput);
+    if (!isNaN(pageNumber) && pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber - 1);
+      setPageInput('');
     }
   };
 
@@ -100,7 +114,21 @@ export const Reader = ({ bookPath }: ReaderProps) => {
               Previous
             </button>
             <div className="progress">
-              Page {currentPage + 1} of {totalPages}
+              <div className="page-info">
+                Page {currentPage + 1} of {totalPages}
+              </div>
+              <form onSubmit={handlePageInputSubmit} className="page-input-form">
+                <input
+                  type="number"
+                  min="1"
+                  max={totalPages}
+                  value={pageInput}
+                  onChange={handlePageInputChange}
+                  placeholder="Go to page"
+                  className="page-input"
+                />
+                <button type="submit" className="go-button">Go</button>
+              </form>
               <div className="progress-bar">
                 <div 
                   className="progress-fill"
