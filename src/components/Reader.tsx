@@ -17,7 +17,7 @@ export const Reader = ({ bookPath }: ReaderProps) => {
   useEffect(() => {
     const isEpub = bookPath.endsWith('.epub');
     // Add the base URL to the book path
-    const fullPath = `/webreader/${bookPath}`;
+    const fullPath = `/webreader/webreader/${bookPath}`;
 
     if (isEpub) {
       fetch(fullPath)
