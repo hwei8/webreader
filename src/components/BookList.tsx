@@ -26,6 +26,11 @@ export const BookList = ({ onBookSelect }: BookListProps) => {
           title: "Sample Book 2",
           path: "./books/book2.epub", // Add ./ to the path
           type: "epub"
+        },
+        {
+          title: "Sample Book 3",
+          path: "./books/book3.txt", // Add ./ to the path
+          type: "txt"
         }
     ];
     setBooks(bookList);
