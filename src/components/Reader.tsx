@@ -3,10 +3,10 @@ import * as epub from 'epubjs';
 import './Reader.css';
 
 interface ReaderProps {
-  file: File;
+  bookPath: string;
 }
 
-export const Reader = ({ file }: ReaderProps) => {
+export const Reader = ({ bookPath }: ReaderProps) => {
   const [content, setContent] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -15,54 +15,51 @@ export const Reader = ({ file }: ReaderProps) => {
   const LINES_PER_PAGE = 30;
 
   useEffect(() => {
-    if (file.type === 'application/epub+zip') {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const arrayBuffer = e.target?.result as ArrayBuffer;
-        const book = epub.default(arrayBuffer);
-        const newRendition = book.renderTo(containerRef.current!, {
-          width: '100%',
-          height: '100%',
-          spread: 'none'
-        });
-        newRendition.display();
-        setRendition(newRendition);
+    const isEpub = bookPath.endsWith('.epub');
+    // Add the base URL to the book path
+    const fullPath = `/webreader/${bookPath}`;
 
-        // Add navigation for EPUB
-        newRendition.on('keyup', (event: KeyboardEvent) => {
-          if (event.key === 'ArrowRight' || event.key === ' ') {
-            newRendition.next();
-          } else if (event.key === 'ArrowLeft') {
-            newRendition.prev();
-          }
+    if (isEpub) {
+      fetch(fullPath)
+        .then(response => response.arrayBuffer())
+        .then(arrayBuffer => {
+          const book = epub.default(arrayBuffer);
+          const newRendition = book.renderTo(containerRef.current!, {
+            width: '100%',
+            height: '100%',
+            spread: 'none'
+          });
+          newRendition.display();
+          setRendition(newRendition);
+
+          // Add keyboard navigation for EPUB
+          newRendition.on('keyup', (event: KeyboardEvent) => {
+            if (event.key === 'ArrowRight' || event.key === ' ') {
+              newRendition.next();
+            } else if (event.key === 'ArrowLeft') {
+              newRendition.prev();
+            }
+          });
+        })
+        .catch(error => {
+          console.error('Error loading EPUB:', error);
         });
-      };
-      reader.readAsArrayBuffer(file);
-    } else if (file.type === 'text/plain') {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const text = e.target?.result as string;
+    } else {
+      fetch(fullPath)
+        .then(response => response.text())
+        .then(text => {
           const lines = text.split('\n');
           setContent(lines);
           setTotalPages(Math.ceil(lines.length / LINES_PER_PAGE));
-        } catch (error) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const text = e.target?.result as string;
-            const lines = text.split('\n');
-            setContent(lines);
-            setTotalPages(Math.ceil(lines.length / LINES_PER_PAGE));
-          };
-          reader.readAsText(file, 'GB2312');
-        }
-      };
-      reader.readAsText(file, 'UTF-8');
+        })
+        .catch(error => {
+          console.error('Error loading text file:', error);
+        });
     }
-  }, [file]);
+  }, [bookPath]);
 
   const goToNextPage = () => {
-    if (file.type === 'application/epub+zip' && rendition) {
+    if (bookPath.endsWith('.epub') && rendition) {
       rendition.next();
     } else if (currentPage < totalPages - 1) {
       setCurrentPage(prev => prev + 1);
@@ -70,7 +67,7 @@ export const Reader = ({ file }: ReaderProps) => {
   };
 
   const goToPreviousPage = () => {
-    if (file.type === 'application/epub+zip' && rendition) {
+    if (bookPath.endsWith('.epub') && rendition) {
       rendition.prev();
     } else if (currentPage > 0) {
       setCurrentPage(prev => prev - 1);
@@ -85,7 +82,7 @@ export const Reader = ({ file }: ReaderProps) => {
 
   return (
     <div className="reader-container">
-      {file.type === 'application/epub+zip' ? (
+      {bookPath.endsWith('.epub') ? (
         <div ref={containerRef} className="epub-container" />
       ) : (
         <>

@@ -1,8 +1,11 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/webreader/',
+  base: './', // Change this from '/webreader/' to './'
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets'
+  }
 })
